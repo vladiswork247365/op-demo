@@ -11,16 +11,22 @@ concurrency:
   group: pages-deploy
   cancel-in-progress: false
 jobs:
-  deploy:
+  # Выгрузка и публикация - разные задачи: публикация в той же задаче искала архив
+  # через полсекунды после выгрузки и не находила его (24.11.2026).
+  build:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.d.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: '.'
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
       - id: d
         uses: actions/deploy-pages@v4
